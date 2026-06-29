@@ -1,66 +1,93 @@
 import streamlit as st
-from openai import OpenAI
+import os
 
-st.set_page_config(page_title="EduBridge AI", layout="centered")
-st.title("📘 EduBridge AI")
-st.subheader("Personalized Learning Without Barriers")
+# ---------------- PAGE CONFIG ----------------
+st.set_page_config(
+    page_title="EduBridge AI",
+    page_icon="🎓",
+    layout="centered"
+)
 
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-
-topic = st.text_input("Enter Learning Topic")
-language = st.selectbox("Select Language", ["English", "Hindi", "Spanish", "French"])
-level = st.selectbox("Select Level", ["Beginner", "Intermediate", "Advanced"])
-
-def generate_explanation(topic, level, language):
-    return f"""
-📘 Topic: {topic}
-👤 Level: {level}
-🌍 Language: {language}
-
-This is a personalized explanation generated for the student.
-The content is adapted to their learning level and language.
-This demonstrates how AI removes language barriers
-and personalizes education in real time.
-"""
-
-def generate_quiz(topic, level, language):
-    return f"""
-1. What is {topic}?
-Answer: A basic concept explanation.
-
-2. Why is {topic} important?
-Answer: It helps understand real-world problems.
-
-3. Give one example of {topic}.
-Answer: Example based on daily life.
-"""
-    prompt = f"""
-    Create 3 quiz questions on {topic}
-    Difficulty: {level}
-    Language: {language}
-    Include answers.
+# ---------------- HEADER ----------------
+st.markdown(
     """
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role":"user","content":prompt}]
+    <h1 style='text-align:center;'>🎓 EduBridge AI</h1>
+    <h4 style='text-align:center; color: gray;'>
+    Personalized Learning • Any Topic • Any Language
+    </h4>
+    <hr>
+    """,
+    unsafe_allow_html=True
+)
+
+# ---------------- SIDEBAR ----------------
+st.sidebar.title("🎓 EduBridge AI")
+st.sidebar.markdown("""
+**Bridging learning gaps with AI**
+
+✔ Personalized explanations  
+✔ Multilingual support  
+✔ Real-time responses  
+
+Built for students & educators.
+""")
+
+# ---------------- AI FUNCTION ----------------
+def generate_explanation(topic, level, language):
+    # OFFLINE / DEMO MODE (NO API NEEDED)
+    return f"""
+This is a **{level.lower()} level explanation** of **{topic}** in **{language}**.
+
+EduBridge AI adapts explanations based on the learner’s understanding level
+and preferred language, making education more accessible and effective.
+
+(For hackathon demo, this represents AI-generated personalized learning.)
+"""
+
+# ---------------- INPUTS ----------------
+topic = st.text_input(
+    "🧠 Enter Topic",
+    placeholder="e.g. Photosynthesis, Blockchain, Newton's Laws"
+)
+
+col1, col2 = st.columns(2)
+
+with col1:
+    level = st.selectbox(
+        "📚 Student Level",
+        ["Beginner", "Intermediate", "Advanced"]
     )
-    return response.choices[0].message.content
 
-if st.button("🎓 Generate Learning"):
-    explanation = generate_explanation(topic, level, language)
-    st.success("Explanation Generated!")
-    st.write(explanation)
+with col2:
+    language = st.selectbox(
+        "🌍 Language",
+        ["English", "Hindi", "Spanish", "French"]
+    )
 
-if st.button("📝 Generate Quiz"):
-    quiz = generate_quiz(topic, level, language)
-    st.info("Quiz Ready!")
-    st.write(quiz)
+# ---------------- BUTTON & OUTPUT ----------------
+if st.button("🚀 Generate Explanation", disabled=not topic):
+    with st.spinner("EduBridge AI is creating a personalized explanation..."):
+        explanation = generate_explanation(topic, level, language)
 
-st.markdown("---")
-st.subheader("👩‍🏫 Educator Dashboard (Demo)")
-st.table({
-    "Student": ["Demo User"],
-    "Topic": [topic if topic else "—"],
-    "Level": [level],
-    "Status": ["Learning Completed"]
-})
+    st.success("Explanation Ready!")
+
+    st.markdown(
+        f"""
+        <div style='
+            background-color:#f8f9fa;
+            padding:20px;
+            border-radius:10px;
+            border-left:5px solid #4CAF50;
+        '>
+        <h4>📖 Explanation</h4>
+        <p>{explanation}</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+# ---------------- FOOTER ----------------
+st.markdown(
+    "<hr><p style='text-align:center; color:gray;'>Built for Hackathon | EduBridge AI</p>",
+    unsafe_allow_html=True
+)
