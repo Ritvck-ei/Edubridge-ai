@@ -1,5 +1,4 @@
 import streamlit as st
-import os
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
@@ -27,22 +26,26 @@ st.sidebar.markdown("""
 
 ✔ Personalized explanations  
 ✔ Multilingual support  
-✔ Real-time responses  
+✔ Quiz-based learning  
 
 Built for students & educators.
 """)
 
-# ---------------- AI FUNCTION ----------------
+# ---------------- AI FUNCTIONS ----------------
 def generate_explanation(topic, level, language):
-    # OFFLINE / DEMO MODE (NO API NEEDED)
     return f"""
 This is a **{level.lower()} level explanation** of **{topic}** in **{language}**.
 
-EduBridge AI adapts explanations based on the learner’s understanding level
-and preferred language, making education more accessible and effective.
-
-(For hackathon demo, this represents AI-generated personalized learning.)
+EduBridge AI adapts content based on the learner’s level and preferred language,
+making education accessible, inclusive, and effective.
 """
+
+def generate_quiz(topic):
+    return [
+        f"What is the main idea of {topic}?",
+        f"Why is {topic} important?",
+        f"Give one real-life example of {topic}."
+    ]
 
 # ---------------- INPUTS ----------------
 topic = st.text_input(
@@ -53,38 +56,46 @@ topic = st.text_input(
 col1, col2 = st.columns(2)
 
 with col1:
-    level = st.selectbox(
-        "📚 Student Level",
-        ["Beginner", "Intermediate", "Advanced"]
-    )
+    level = st.selectbox("📚 Student Level", ["Beginner", "Intermediate", "Advanced"])
 
 with col2:
-    language = st.selectbox(
-        "🌍 Language",
-        ["English", "Hindi", "Spanish", "French"]
-    )
+    language = st.selectbox("🌍 Language", ["English", "Hindi", "Spanish", "French"])
 
-# ---------------- BUTTON & OUTPUT ----------------
+# ---------------- STATE ----------------
+if "explanation" not in st.session_state:
+    st.session_state.explanation = None
+
+# ---------------- BUTTONS ----------------
 if st.button("🚀 Generate Explanation", disabled=not topic):
     with st.spinner("EduBridge AI is creating a personalized explanation..."):
-        explanation = generate_explanation(topic, level, language)
+        st.session_state.explanation = generate_explanation(topic, level, language)
 
+# ---------------- OUTPUT ----------------
+if st.session_state.explanation:
     st.success("Explanation Ready!")
 
     st.markdown(
         f"""
         <div style='
-            background-color:#f8f9fa;
             padding:20px;
             border-radius:10px;
             border-left:5px solid #4CAF50;
+            background-color: rgba(76, 175, 80, 0.1);
         '>
         <h4>📖 Explanation</h4>
-        <p>{explanation}</p>
+        <p>{st.session_state.explanation}</p>
         </div>
         """,
         unsafe_allow_html=True
     )
+
+    # QUIZ BUTTON
+    if st.button("🧪 Generate Quiz"):
+        quiz = generate_quiz(topic)
+
+        st.markdown("### 📝 Quick Quiz")
+        for i, q in enumerate(quiz, 1):
+            st.markdown(f"**Q{i}. {q}**")
 
 # ---------------- FOOTER ----------------
 st.markdown(
